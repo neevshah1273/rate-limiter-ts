@@ -28,25 +28,39 @@ describe('TokenBucket', () => {
         }, (capacity / refillRate) * 1000 + 100); 
       });
 
-  it('should correctly report if a token is allowed or not', () => {
-    const capacity = 5;
-    const refillRate = 1;
-    const bucket = new TokenBucket(capacity, refillRate);
+    it('should correctly report if a token is allowed or not', () => {
+        const capacity = 5;
+        const refillRate = 1;
+        const bucket = new TokenBucket(capacity, refillRate);
 
-    expect(bucket.isAllowed()).to.be.true;
-
-   
-    for (let i = 0; i < capacity; i++) {
-      bucket.consumeToken();
-    }
+        expect(bucket.isAllowed()).to.be.true;
 
     
-    expect(bucket.isAllowed()).to.be.false;
+        for (let i = 0; i < capacity; i++) {
+        bucket.consumeToken();
+        }
 
-    
-    const waitTime = capacity / refillRate * 1000;
-    setTimeout(() => {
-      expect(bucket.isAllowed()).to.be.true;
-    }, waitTime + 100); 
-  });
+        
+        expect(bucket.isAllowed()).to.be.false;
+
+        
+        const waitTime = capacity / refillRate * 1000;
+        setTimeout(() => {
+        expect(bucket.isAllowed()).to.be.true;
+        }, waitTime + 100); 
+    });
+
+    it('it should check for input validations', ()=>{
+        
+        expect(() => new TokenBucket(0, -5)).to.throw(
+            'Capacity must be greater than or equal to 1.'
+        );
+
+        expect(() => new TokenBucket(5, -2)).to.throw(
+            'Refill rate must be greater than or equal to 0.'
+        )
+        
+    });
+
+
 });

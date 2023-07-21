@@ -5,6 +5,13 @@ export class TokenBucket {
     private refillRate: number;
   
     constructor(capacity: number, refillRate: number) {
+      if (capacity < 1) {
+        throw new Error('Capacity must be greater than or equal to 1.');
+      }
+  
+      if (refillRate < 0) {
+        throw new Error('Refill rate must be greater than or equal to 0.');
+      }
       this.capacity = capacity;
       this.tokens = capacity;
       this.lastRefillTime = Date.now();
