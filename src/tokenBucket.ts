@@ -1,10 +1,20 @@
+export enum RefillRateTimeUnit {
+  Year = 'year',
+  Month = 'month',
+  Day = 'day',
+  Hour = 'hour',
+  Minute = 'minute',
+  Second = 'second',
+}
+
 export class TokenBucket {
     private capacity: number;
-    private tokens: number;
-    private lastRefillTime: number;
+    private tokens: Map<string, number>;
+    private lastRefillTime: Map<string, number>;
     private refillRate: number;
+    private refillRateUnit : RefillRateTimeUnit;
   
-    constructor(capacity: number, refillRate: number) {
+    constructor(capacity: number, refillRate: number, refillRateUnit: RefillRateTimeUnit) {
       if (capacity < 1) {
         throw new Error('Capacity must be greater than or equal to 1.');
       }
@@ -13,35 +23,64 @@ export class TokenBucket {
         throw new Error('Refill rate must be greater than or equal to 0.');
       }
       this.capacity = capacity;
-      this.tokens = capacity;
-      this.lastRefillTime = Date.now();
+      this.tokens = new Map<string, number>();
+      this.lastRefillTime = new Map<string, number>();
       this.refillRate = refillRate;
+      this.refillRateUnit = refillRateUnit;
+    }
+
+    private getRefillRateInSeconds(): number {
+      switch (this.refillRateUnit) {
+        case RefillRateTimeUnit.Year:
+          return this.refillRate * 365 * 24 * 60 * 60;
+        case RefillRateTimeUnit.Month:
+          return this.refillRate * 30 * 24 * 60 * 60;
+        case RefillRateTimeUnit.Day:
+          return this.refillRate * 24 * 60 * 60;
+        case RefillRateTimeUnit.Hour:
+          return this.refillRate * 60 * 60;
+        case RefillRateTimeUnit.Minute:
+          return this.refillRate * 60;
+        case RefillRateTimeUnit.Second:
+          return this.refillRate;
+        default:
+          throw new Error('Invalid refill rate unit.');
+      }
     }
   
-    private refill() {
+    private refill(key: string) {
       const now = Date.now();
-      const timeElapsed = now - this.lastRefillTime;
-      const newTokens = (timeElapsed / 1000) * this.refillRate;
+      if(!this.tokens.has(key)){
+        
+        this.tokens.set(key, this.capacity);
+        this.lastRefillTime.set(key, now);
+        return;
+      }
+      const timeElapsed = now - this.lastRefillTime.get(key);
+      const newTokens = (timeElapsed / 1000) * this.getRefillRateInSeconds();
   
-      this.tokens = Math.min(this.tokens + newTokens, this.capacity);
-      this.lastRefillTime = now;
+   
+      this.tokens.set(key, Math.min(this.tokens.get(key)! + newTokens, this.capacity));  
+      this.lastRefillTime.set(key, now);
     }
   
-    public isAllowed(): boolean {
-      this.refill();
+    public isAllowed(key?: string): boolean {
+      if(!key)key='global'
+      this.refill(key);
   
-      if (this.tokens >= 1) {
+      if (this.tokens.get(key) >= 1) {
         return true;
       }
   
       return false;
     }
   
-    public consumeToken(): boolean {
-      this.refill();
-  
-      if (this.tokens >= 1) {
-        this.tokens--;
+    public consumeToken(key? : string): boolean {
+      if(!key)key='global'
+      this.refill(key);
+      
+      if (this.tokens.get(key) >= 1) {
+        this.tokens.set(key, this.tokens.get(key)-1);
         return true;
       }
   

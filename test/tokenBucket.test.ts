@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { TokenBucket } from '../src/TokenBucket';
+import { RefillRateTimeUnit, TokenBucket } from '../src/TokenBucket';
 
 
 describe('TokenBucket', () => {
@@ -10,7 +10,7 @@ describe('TokenBucket', () => {
     
         const capacity = 2;
         const refillRate = 2;
-        const bucket = new TokenBucket(capacity, refillRate);
+        const bucket = new TokenBucket(capacity, refillRate, RefillRateTimeUnit.Second);
     
 
         expect(bucket.consumeToken()).to.be.true;
@@ -31,7 +31,7 @@ describe('TokenBucket', () => {
     it('should correctly report if a token is allowed or not', () => {
         const capacity = 5;
         const refillRate = 1;
-        const bucket = new TokenBucket(capacity, refillRate);
+        const bucket = new TokenBucket(capacity, refillRate, RefillRateTimeUnit.Second);
 
         expect(bucket.isAllowed()).to.be.true;
 
@@ -52,11 +52,11 @@ describe('TokenBucket', () => {
 
     it('it should check for input validations', ()=>{
         
-        expect(() => new TokenBucket(0, -5)).to.throw(
+        expect(() => new TokenBucket(0, -5, RefillRateTimeUnit.Minute)).to.throw(
             'Capacity must be greater than or equal to 1.'
         );
 
-        expect(() => new TokenBucket(5, -2)).to.throw(
+        expect(() => new TokenBucket(5, -2, RefillRateTimeUnit.Month)).to.throw(
             'Refill rate must be greater than or equal to 0.'
         )
         
