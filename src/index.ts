@@ -1,4 +1,5 @@
 // Import the rate limiting algorithms from their respective files
+import { StorageOption } from './storageOption';
 import { TokenBucket, RefillRateTimeUnit } from './tokenBucket';
 
 
@@ -14,7 +15,7 @@ export class RateLimiter {
   ) {
     switch (algorithmName) {
       case 'token-bucket':
-        this.algorithm = new TokenBucket(capacity, refillRate, RefillRateTimeUnit.Second);
+        this.algorithm = new TokenBucket(capacity, refillRate, RefillRateTimeUnit.Second, StorageOption.Normal);
         break;
       // case 'leaky-bucket':
       //   this.algorithm = new LeakyBucket();

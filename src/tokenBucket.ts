@@ -1,3 +1,6 @@
+import Redis, { RedisOptions } from 'ioredis';
+import { StorageOption } from "./storageOption";
+
 export enum RefillRateTimeUnit {
   Year = 'year',
   Month = 'month',
@@ -13,8 +16,18 @@ export class TokenBucket {
     private lastRefillTime: Map<string, number>;
     private refillRate: number;
     private refillRateUnit : RefillRateTimeUnit;
+    private burstPeriod : number;
+    private storageOption : StorageOption;
+    private redisClient?: Redis;
   
-    constructor(capacity: number, refillRate: number, refillRateUnit: RefillRateTimeUnit) {
+    constructor(
+      capacity: number, 
+      refillRate: number, 
+      refillRateUnit: RefillRateTimeUnit,
+      storageOption: StorageOption , 
+      burstPeriod? : number, 
+      redisOptions? : RedisOptions
+    ) {
       if (capacity < 1) {
         throw new Error('Capacity must be greater than or equal to 1.');
       }
@@ -27,6 +40,18 @@ export class TokenBucket {
       this.lastRefillTime = new Map<string, number>();
       this.refillRate = refillRate;
       this.refillRateUnit = refillRateUnit;
+      this.burstPeriod = burstPeriod;
+      this.storageOption= storageOption;
+
+      if(this.storageOption==StorageOption.Redis){
+        try {
+          this.redisClient = new Redis(redisOptions);
+        } catch (error) {
+          throw new Error(error.message);
+        }
+        
+      }
+
     }
 
     private getRefillRateInSeconds(): number {

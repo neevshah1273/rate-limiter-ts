@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RateLimiter = void 0;
 // Import the rate limiting algorithms from their respective files
+const storageOption_1 = require("./storageOption");
 const tokenBucket_1 = require("./tokenBucket");
 // Export the user-facing API class
 class RateLimiter {
@@ -9,7 +10,7 @@ class RateLimiter {
     constructor(algorithmName, capacity, refillRate) {
         switch (algorithmName) {
             case 'token-bucket':
-                this.algorithm = new tokenBucket_1.TokenBucket(capacity, refillRate);
+                this.algorithm = new tokenBucket_1.TokenBucket(capacity, refillRate, tokenBucket_1.RefillRateTimeUnit.Second, storageOption_1.StorageOption.Normal);
                 break;
                 // case 'leaky-bucket':
                 //   this.algorithm = new LeakyBucket();
